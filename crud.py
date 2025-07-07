@@ -62,11 +62,25 @@ class CrudInventario:
             print("🔍 Ejecutando consulta SQL...")
             cursor.execute("select * from `inventario - vivero cafe el arco`.producto p")
 
-            resultados = cursor.fetchall()
+            resultado = cursor.fetchall()
             columnas = [desc[0] for desc in cursor.description]
-            print("Resultados: ", resultados)
-            print("📦 Datos obtenidos correctamente.")
-            return columnas, resultados
+            col_widths = []
+            for i in range(len(columnas)):
+                ancho_columna = max(len(str(row[i])) for row in resultado) if resultado else 0
+                col_widths.append(max(ancho_columna, len(columnas[i])) + 2)
+
+            header = ""
+            for i, col in enumerate(columnas):
+                header += col.ljust(col_widths[i])
+            print(header)
+
+            print("-" * len(header))
+
+            for row in resultado:
+                linea = ""
+                for i, col in enumerate(row):
+                    linea += str(col).ljust(col_widths[i])
+                print(linea)
     
         except Error as e:
             print("❌ Error al conectar a MySQL")
