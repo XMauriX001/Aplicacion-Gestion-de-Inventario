@@ -96,8 +96,24 @@ class CrudInventario:
             cursor.execute(query, (id_producto,))
             resultado = cursor.fetchall()
             columnas = [desc[0] for desc in cursor.description]
-            print("Resultados: ", resultado)
-            return columnas, resultado
+            
+            col_widths = []
+            for i in range(len(columnas)):
+                ancho_columna = max(len(str(row[i])) for row in resultado) if resultado else 0
+                col_widths.append(max(ancho_columna, len(columnas[i])) + 2)
+
+            header = ""
+            for i, col in enumerate(columnas):
+                header += col.ljust(col_widths[i])
+            print(header)
+
+            print("-" * len(header))
+
+            for row in resultado:
+                linea = ""
+                for i, col in enumerate(row):
+                    linea += str(col).ljust(col_widths[i])
+                print(linea)
         except Error as e:
             print(f"❌ Error al buscar producto por ID: {e}")
             return None
@@ -380,7 +396,7 @@ if __name__ == "__main__":
 if __name__ == "__main__":
     inventario = CrudInventario()
     try:
-        inventario.obtener_datos_producto()
+        inventario.buscar_producto_por_id(1)
         
     finally:
         inventario.cerrar_conexion()
