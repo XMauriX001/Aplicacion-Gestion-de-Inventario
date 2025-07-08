@@ -2,6 +2,7 @@
 import mysql.connector
 from mysql.connector import Error
 import sys
+from datetime import datetime
 
 # Funciones backend para la aplicación
 
@@ -350,7 +351,155 @@ class CrudInventario:
             print(f"❌ Error al eliminar receta: {e}")
             self.connection.rollback()
             return False
+    def mostrar_receta_producto(self):
+        try:
+            cursor = self.connection.cursor()
+            cursor.execute("select * from `inventario - vivero cafe el arco`.receta_producto")
+            resultado = cursor.fetchall()
+            columnas = [desc[0] for desc in cursor.description]
+            col_widths = []
+            for i in range(len(columnas)):
+                ancho_columna = max(len(str(row[i])) for row in resultado) if resultado else 0
+                col_widths.append(max(ancho_columna, len(columnas[i])) + 2)
+            
+            header = ""
+            for i, col in enumerate(columnas):
+                header += col.ljust(col_widths[i])
+            print(header)
+            
+            print("-" * len(header))
+            
+            for row in resultado:
+                linea = ""
+                for i, col in enumerate(row):
+                    linea += str(col).ljust(col_widths[i])
+                print(linea)
+        except Error as e:
+            print("❌ Error al conectar a MySQL")
+            print(e)
 
+    # Facturas
+
+    def agregar_factura(self, id_factura, codigo):
+        try:
+            cursor = self.connection.cursor()
+            query = """
+            INSERT INTO `inventario - vivero cafe el arco`.facturas
+            (Id_factura, Codigo_factura, Fecha)  
+            VALUES (%s, %s, %s)
+            """
+            fecha = datetime.now().date()
+            cursor.execute(query, (id_factura, codigo, fecha))
+            self.connection.commit()
+            print("📦 Factura agregada correctamente")
+            return True
+        except Error as e:
+            print(f"❌ Error al agregar factura: {e}")
+            self.connection.rollback()
+            return False
+
+    def eliminar_factura(self, id_factura):
+        try:
+            cursor = self.connection.cursor()
+            query = """
+            DELETE FROM `inventario - vivero cafe el arco`.facturas
+            WHERE Id_factura = %s
+            """
+            cursor.execute(query, (id_factura,))
+            self.connection.commit()
+            print("📦 Factura eliminada correctamente")
+        except Error as e:
+            print(f"❌ Error al eliminar factura: {e}")
+            self.connection.rollback()
+            return False
+
+    def mostrar_facturas(self):
+        try:
+            cursor = self.connection.cursor()
+            cursor.execute("select * from `inventario - vivero cafe el arco`.facturas")
+            resultado = cursor.fetchall()
+            columnas = [desc[0] for desc in cursor.description]
+            col_widths = []
+            for i in range(len(columnas)):
+                ancho_columna = max(len(str(row[i])) for row in resultado) if resultado else 0
+                col_widths.append(max(ancho_columna, len(columnas[i])) + 2)
+            
+            header = ""
+            for i, col in enumerate(columnas):
+                header += col.ljust(col_widths[i])
+            print(header)
+            
+            print("-" * len(header))
+            
+            for row in resultado:
+                linea = ""
+                for i, col in enumerate(row):
+                    linea += str(col).ljust(col_widths[i])
+                print(linea)
+        except Error as e:
+            print("❌ Error al conectar a MySQL")
+            print(e)
+
+    # Detalles de facturas
+    def agregar_detalle_factura(self, id_factura, id_producto, id_proveedor, cantidad, id_unidad_medida, total_por_producto):
+        try:
+            cursor = self.connection.cursor()
+            query = """
+            INSERT INTO `inventario - vivero cafe el arco`.detalles_facturas
+            (Id_factura, Id_producto, Id_proveedor, Cantidad_producto, Id_unidad_medida, Total_por_producto)
+            VALUES (%s, %s, %s, %s, %s, %s)
+            """
+            cursor.execute(query, (id_factura, id_producto, id_proveedor, cantidad, id_unidad_medida, total_por_producto))
+            self.connection.commit()
+            print("📦 Detalle de factura agregado correctamente")
+            return True
+        except Error as e:
+            print(f"❌ Error al agregar detalle de factura: {e}")
+            self.connection.rollback()
+            return False
+
+    def eliminar_detalle_factura(self, id_factura, id_producto, id_proveedor):
+        try:
+            cursor = self.connection.cursor()
+            query = """
+            DELETE FROM `inventario - vivero cafe el arco`.detalles_facturas
+            WHERE Id_factura = %s AND Id_producto = %s AND Id_proveedor = %s
+            """
+            cursor.execute(query, (id_factura, id_producto, id_proveedor))
+            self.connection.commit()
+            print("📦 Detalle de factura eliminado correctamente")
+        except Error as e:
+            print(f"❌ Error al eliminar detalle de factura: {e}")
+            self.connection.rollback()
+            return False
+
+    def mostrar_detalles_factura(self):
+        try:
+            cursor = self.connection.cursor()
+            cursor.execute("select * from `inventario - vivero cafe el arco`.detalles_facturas")
+            resultado = cursor.fetchall()
+            columnas = [desc[0] for desc in cursor.description]
+            col_widths = []
+            for i in range(len(columnas)):
+                ancho_columna = max(len(str(row[i])) for row in resultado) if resultado else 0
+                col_widths.append(max(ancho_columna, len(columnas[i])) + 2)
+            
+            header = ""
+            for i, col in enumerate(columnas):
+                header += col.ljust(col_widths[i])
+            print(header)
+            
+            print("-" * len(header))
+            
+            for row in resultado:
+                linea = ""
+                for i, col in enumerate(row):
+                    linea += str(col).ljust(col_widths[i])
+                print(linea)
+        except Error as e:
+            print("❌ Error al conectar a MySQL")
+            print(e)
+    
     def cerrar_conexion(self):
         if self.connection.is_connected():
             self.connection.close()
@@ -396,7 +545,7 @@ if __name__ == "__main__":
 if __name__ == "__main__":
     inventario = CrudInventario()
     try:
-        inventario.buscar_producto_por_id(1)
+        inventario.mostrar_detalles_factura() 
         
     finally:
         inventario.cerrar_conexion()
