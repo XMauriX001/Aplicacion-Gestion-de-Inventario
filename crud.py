@@ -3,7 +3,7 @@ import mysql.connector
 from mysql.connector import Error
 import sys
 from datetime import datetime
-
+from decimal import Decimal
 # Funciones backend para la aplicación
 
 class CrudInventario:
@@ -253,6 +253,7 @@ class CrudInventario:
             print("❌ Error al conectar a MySQL")
             print(e)
 
+    # Una de las funciones más importantes        
     def obtener_productos_para_receta(self, id_receta): #Pendiente
         try:
             cursor = self.connection.cursor()
@@ -305,7 +306,7 @@ class CrudInventario:
             # 4. Mostrar totales
             print("=" * 85)
             print(f"{'COSTO TOTAL DE LA RECETA':<60} ${costo_total:>10.4f}")
-            print(f"{'PRECIO DE VENTA SUGERIDO':<60} ${costo_total*0.35:>10.2f}") 
+            print(f"{'PRECIO DE VENTA SUGERIDO':<60} ${(costo_total/Decimal(0.60)):>10.2f}")  
         
             return {
                 'nombre_receta': nombre_receta,
@@ -545,7 +546,7 @@ if __name__ == "__main__":
 if __name__ == "__main__":
     inventario = CrudInventario()
     try:
-        inventario.mostrar_detalles_factura() 
+        inventario.obtener_productos_para_receta(1)
         
     finally:
         inventario.cerrar_conexion()
